@@ -1,10 +1,9 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 class State {
     public static List<State> allStates = new ArrayList<>();
@@ -14,9 +13,13 @@ class State {
     private boolean isGood;
     private List<State> equivalentStates;
 
+    //random
+    static int returnCounter=0;
+    static int inCounter=0;
+
     public State(String name) {
         this.name = name;
-        transitions = new HashMap<>();
+        transitions = new LinkedHashMap<>();
         isGood = false;
         equivalentStates = new ArrayList<>();
         allStates.add(this);
@@ -44,6 +47,7 @@ class State {
     }
 
     public static State getStateByName(String name) {
+//        System.out.println("Name was: "+name);
         return allStates.stream().filter((s) -> s.name.equals(name)).findAny().get();
     }
 
@@ -54,6 +58,11 @@ class State {
                      System.out.println(entry.getKey() + ", " + entry.getValue().getName());
                 }
         ));
+
+
+    }
+    public State getTransitionForSybmol(String symb){
+        return transitions.get(symb);
     }
 
     public static List<State> getAllStates() {
@@ -92,14 +101,22 @@ class State {
 
     }
 
-    public static boolean checkIfEquivalent(State firstState, State secondState, String[] symbols, List<State> visited) {
+    public static boolean checkIfEquivalent(State firstState, State secondState, String[] symbols,Map<State,State> visited) {
 
-        if (firstState.isGood != secondState.isGood || (visited.contains(firstState) || visited.contains(secondState))) return false;
-        visited.add(firstState);
-        visited.add(secondState);
+        if (firstState.isGood != secondState.isGood ) return false;
+        if(visited.get(firstState) == secondState ||visited.get(secondState) ==firstState|| firstState ==secondState) return  true;
+        visited.put(firstState, secondState);
             for (String sym : symbols) {
+              //  inCounter++;
+              //  System.out.println("in: "+inCounter);
+//                 if(!checkIfEquivalent(firstState.transitions.get(sym), secondState.transitions.get(sym), symbols,visited)){
+//                     return false;
+//                 }
                 return checkIfEquivalent(firstState.transitions.get(sym), secondState.transitions.get(sym), symbols,visited);
             }
+        //return checkIfEquivalent(firstState.getTransitionForSybmol(symbol), secondState.getTransitionForSybmol(symbol),symbol,visited);
+       // returnCounter++;
+      //  System.out.println("returning : "+returnCounter);
             return true;
 
 
@@ -120,7 +137,13 @@ public class lab2 {
         line = reader.readLine();
         String goodStates[] = line.split(",");
         for(String s: goodStates){
-            State.getStateByName(s).setIsGood(true);
+            if(s.equals("")){
+               // System.out.println("no good states");
+            }
+            else {
+                State.getStateByName(s).setIsGood(true);
+            }
+
         }
         String startingStateString = reader.readLine();
         State startingState = State.getStateByName(startingStateString);
@@ -143,10 +166,10 @@ public class lab2 {
         for (State firststate : State.getAllStates()) { //mogla bi biti dvostruko brza petlja da je tablica(yikes)
             for (State secondstate : State.getAllStates()) {
                 if (firststate != secondstate) {
-                    List<State> visited = new ArrayList<>();
+                    Map<State,State> visited = new LinkedHashMap<>();
                     if(State.checkIfEquivalent(firststate,secondstate, allSymbols,visited)){
                         firststate.addEquivalentStates(secondstate);
-                       System.out.println(firststate.getName()+ " is eq with "+secondstate.getName());
+                      //System.out.println(firststate.getName()+ " is eq with "+secondstate.getName());
                     }
                     else{
                        // System.out.println(firststate.getName()+ " isn't eq with "+secondstate.getName());
@@ -184,24 +207,44 @@ public class lab2 {
             }
         }
         builder.append("\n");
-
-        for(int i=0;i<differentStates.size(); i++){
-            if(differentStates.get(i).isGood()){
-                builder.append(differentStates.get(i).getName());
-                if(i!=differentStates.size()-1){
+        List<State> goodStatesList = differentStates.stream().filter((state)->state.isGood()).collect(Collectors.toList());
+        for(int i=0;i<goodStatesList.size(); i++){
+          //  if(differentStates.get(i).isGood()){
+                builder.append(goodStatesList.get(i).getName());
+                if(i!=goodStatesList.size()-1){
                     builder.append(",");
                 }
-            }
+           // }
 
         }
         builder.append("\n");
+        if(!differentStates.contains(startingState)){
+            startingStateString = startingState.getEquivalentStates().get(0).getName();
+        }
         builder.append(startingStateString+"\n");
 
         for(State state: differentStates){
             state.getTransitions().entrySet().forEach((entry)->{
-                builder.append(state.getName()+","+entry.getKey()+"->"+entry.getValue().getName()+"\n");
+               // if(entry.getValue().getEquivalentStates().size() != 0){
+                 //   builder.append(state.getName()+","+entry.getKey()+"->"+entry.getValue().getEquivalentStates().get(0).getName()+"\n");
+                //}
+                //else{
+                boolean written=false;
+                for(State s:entry.getValue().getEquivalentStates()){
+                    if(differentStates.contains(s)){
+                        builder.append(state.getName()+","+entry.getKey()+"->"+s.getName()+"\n");
+                        written=true;
+                        break;
+
+                    }
+                }
+                if(!written) {
+                    builder.append(state.getName() + "," + entry.getKey() + "->" + entry.getValue().getName() + "\n");
+                }
+                //}
             });
         }
+
 
         System.out.print(builder.toString());
 
