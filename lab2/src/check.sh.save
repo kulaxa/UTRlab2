@@ -1,0 +1,18 @@
+#! /bin/bash
+for i in {1..5}
+do
+	
+difs="$(j lab2 <  | diff $dire/test.b -)"
+
+		
+	if [ "$difs" = "" ];
+	then
+		echo "$dire : [OK]"
+	else
+		
+		echo "$dire : "
+		echo $difs
+	fi	
+
+done
+
