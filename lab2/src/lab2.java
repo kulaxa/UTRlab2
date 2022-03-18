@@ -4,18 +4,12 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 class State {
     public static List<State> allStates = new ArrayList<>();
-
     private String name;
     private Map<String, State> transitions;
     private boolean isGood;
     private List<State> equivalentStates;
-
-    //random
-    static int returnCounter=0;
-    static int inCounter=0;
 
     public State(String name) {
         this.name = name;
@@ -28,17 +22,20 @@ class State {
     public String getName() {
         return this.name;
     }
-    public void setIsGood(boolean good){
+
+    public void setIsGood(boolean good) {
         this.isGood = good;
     }
-    public void addEquivalentStates(State state){
+
+    public void addEquivalentStates(State state) {
         equivalentStates.add(state);
     }
-    public List<State> getEquivalentStates(){
+
+    public List<State> getEquivalentStates() {
         return equivalentStates;
     }
 
-    public boolean isGood(){
+    public boolean isGood() {
         return isGood;
     }
 
@@ -47,22 +44,7 @@ class State {
     }
 
     public static State getStateByName(String name) {
-//        System.out.println("Name was: "+name);
         return allStates.stream().filter((s) -> s.name.equals(name)).findAny().get();
-    }
-
-    public static void testPrintTransitions() {
-        allStates.stream().forEach((s) -> s.transitions.entrySet().stream().forEach(
-                (entry) -> {
-                        
-                     System.out.println(entry.getKey() + ", " + entry.getValue().getName());
-                }
-        ));
-
-
-    }
-    public State getTransitionForSybmol(String symb){
-        return transitions.get(symb);
     }
 
     public static List<State> getAllStates() {
@@ -72,7 +54,6 @@ class State {
     public static List<State> findAllInescapableStates(State state) {
         List<State> visitedStates = new ArrayList<>();
         findAllInescapableStatesRec(state, visitedStates);
-
         List<State> result = new ArrayList<>();
         allStates.forEach((st) -> {
             if (!visitedStates.contains(st)) {
@@ -80,7 +61,6 @@ class State {
             }
         });
         return result;
-
     }
 
     private static void findAllInescapableStatesRec(State state, List<State> visitedStates) {
@@ -92,55 +72,38 @@ class State {
         });
     }
 
-    public Map<String, State> getTransitions(){
+    public Map<String, State> getTransitions() {
         return transitions;
     }
 
-    public static void mainAlgorithm(State firstState) {
-        //main algorithm
-
-    }
-
-    public static boolean checkIfEquivalent(State firstState, State secondState, String[] symbols,Map<State,State> visited) {
-
-        if (firstState.isGood != secondState.isGood ) return false;
-        if(visited.get(firstState) == secondState ||visited.get(secondState) ==firstState|| firstState ==secondState) return  true;
-        visited.put(firstState, secondState);
-            for (String sym : symbols) {
-              //  inCounter++;
-              //  System.out.println("in: "+inCounter);
-//                 if(!checkIfEquivalent(firstState.transitions.get(sym), secondState.transitions.get(sym), symbols,visited)){
-//                     return false;
-//                 }
-                return checkIfEquivalent(firstState.transitions.get(sym), secondState.transitions.get(sym), symbols,visited);
-            }
-        //return checkIfEquivalent(firstState.getTransitionForSybmol(symbol), secondState.getTransitionForSybmol(symbol),symbol,visited);
-       // returnCounter++;
-      //  System.out.println("returning : "+returnCounter);
+    public static boolean checkIfEquivalent(State firstState, State secondState, String[] symbols, Map<State, State> visited) {
+        if (firstState.isGood != secondState.isGood) return false;
+        if (visited.get(firstState) == secondState || visited.get(secondState) == firstState || firstState == secondState)
             return true;
-
-
+        visited.put(firstState, secondState);
+        for (String sym : symbols) {
+            return checkIfEquivalent(firstState.transitions.get(sym), secondState.transitions.get(sym), symbols, visited);
+        }
+        return true;
     }
 }
 
 public class lab2 {
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String line= reader.readLine();
+        String line = reader.readLine();
         String allStates[] = line.split(",");
-        for(String s: allStates){
+        for (String s : allStates) {
             new State(s);
         }
-
         line = reader.readLine();
         String allSymbols[] = line.split(",");
         line = reader.readLine();
         String goodStates[] = line.split(",");
-        for(String s: goodStates){
-            if(s.equals("")){
-               // System.out.println("no good states");
-            }
-            else {
+        for (String s : goodStates) {
+            if (s.equals("")) {
+                // System.out.println("no good states");
+            } else {
                 State.getStateByName(s).setIsGood(true);
             }
 
@@ -149,10 +112,12 @@ public class lab2 {
         State startingState = State.getStateByName(startingStateString);
 
         List<String[]> transitions = new ArrayList<>();
-        while(true){
+        while (true) {
             line = reader.readLine();
-            if(line== null){break;}
-            String transition[]= line.split("->");
+            if (line == null) {
+                break;
+            }
+            String transition[] = line.split("->");
             String fromState[] = transition[0].split(",");
             State.getStateByName(fromState[0]).addNewTransition(fromState[1],
                     State.getStateByName(transition[1]));
@@ -160,20 +125,16 @@ public class lab2 {
         //find all inescapable states
         List<State> inescapableState = State.findAllInescapableStates(startingState);
 
-        inescapableState.forEach((state)->{
-           //System.out.println("removing: "+state.getName());
-            State.getAllStates().remove(state);});
+        inescapableState.forEach((state) -> {
+            State.getAllStates().remove(state);
+        });
         for (State firststate : State.getAllStates()) { //mogla bi biti dvostruko brza petlja da je tablica(yikes)
             for (State secondstate : State.getAllStates()) {
                 if (firststate != secondstate) {
-                    Map<State,State> visited = new LinkedHashMap<>();
-                    if(State.checkIfEquivalent(firststate,secondstate, allSymbols,visited)){
+                    Map<State, State> visited = new LinkedHashMap<>();
+                    if (State.checkIfEquivalent(firststate, secondstate, allSymbols, visited)) {
                         firststate.addEquivalentStates(secondstate);
-                      //System.out.println(firststate.getName()+ " is eq with "+secondstate.getName());
-                    }
-                    else{
-                       // System.out.println(firststate.getName()+ " isn't eq with "+secondstate.getName());
-
+                        //System.out.println(firststate.getName()+ " is eq with "+secondstate.getName());
                     }
 
                 }
@@ -182,76 +143,63 @@ public class lab2 {
 
         StringBuilder builder = new StringBuilder();
         List<State> differentStates = new ArrayList<>();
-        for(State state:State.getAllStates()){
-            boolean differentState= true;
-            for(State st: state.getEquivalentStates()){
-                if(differentStates.contains(st)){
+        for (State state : State.getAllStates()) {
+            boolean differentState = true;
+            for (State st : state.getEquivalentStates()) {
+                if (differentStates.contains(st)) {
                     differentState = false;
                     break;
                 }
-
             }
-            if(differentState) {differentStates.add(state);};
+            if (differentState) {
+                differentStates.add(state);
+            }
+            ;
         }
-        for(int i=0; i<differentStates.size(); i++){
+        for (int i = 0; i < differentStates.size(); i++) {
             builder.append(differentStates.get(i).getName());
-            if(i!=differentStates.size()-1){
+            if (i != differentStates.size() - 1) {
                 builder.append(",");
             }
         }
         builder.append("\n");
-        for(int i=0; i<allSymbols.length; i++){
+        for (int i = 0; i < allSymbols.length; i++) {
             builder.append(allSymbols[i]);
-            if(i!=allSymbols.length-1){
+            if (i != allSymbols.length - 1) {
                 builder.append(",");
             }
         }
         builder.append("\n");
-        List<State> goodStatesList = differentStates.stream().filter((state)->state.isGood()).collect(Collectors.toList());
-        for(int i=0;i<goodStatesList.size(); i++){
-          //  if(differentStates.get(i).isGood()){
-                builder.append(goodStatesList.get(i).getName());
-                if(i!=goodStatesList.size()-1){
-                    builder.append(",");
-                }
-           // }
-
+        List<State> goodStatesList = differentStates.stream().filter((state) -> state.isGood()).collect(Collectors.toList());
+        for (int i = 0; i < goodStatesList.size(); i++) {
+            builder.append(goodStatesList.get(i).getName());
+            if (i != goodStatesList.size() - 1) {
+                builder.append(",");
+            }
         }
         builder.append("\n");
-        if(!differentStates.contains(startingState)){
+        if (!differentStates.contains(startingState)) {
             startingStateString = startingState.getEquivalentStates().get(0).getName();
         }
-        builder.append(startingStateString+"\n");
+        builder.append(startingStateString + "\n");
 
-        for(State state: differentStates){
-            state.getTransitions().entrySet().forEach((entry)->{
-               // if(entry.getValue().getEquivalentStates().size() != 0){
-                 //   builder.append(state.getName()+","+entry.getKey()+"->"+entry.getValue().getEquivalentStates().get(0).getName()+"\n");
-                //}
-                //else{
-                boolean written=false;
-                for(State s:entry.getValue().getEquivalentStates()){
-                    if(differentStates.contains(s)){
-                        builder.append(state.getName()+","+entry.getKey()+"->"+s.getName()+"\n");
-                        written=true;
+        for (State state : differentStates) {
+            state.getTransitions().entrySet().forEach((entry) -> {
+                boolean written = false;
+                for (State s : entry.getValue().getEquivalentStates()) {
+                    if (differentStates.contains(s)) {
+                        builder.append(state.getName() + "," + entry.getKey() + "->" + s.getName() + "\n");
+                        written = true;
                         break;
 
                     }
                 }
-                if(!written) {
+                if (!written) {
                     builder.append(state.getName() + "," + entry.getKey() + "->" + entry.getValue().getName() + "\n");
                 }
-                //}
             });
         }
-
-
         System.out.print(builder.toString());
-
-        }
-
-
-
-
     }
+}
 
