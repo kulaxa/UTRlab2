@@ -1,0 +1,4 @@
+650;3;180;160;4
+
+
+##[number of states], [max Rec depth] , [num of Symbols], [state and sym lenght], [num of good states]
