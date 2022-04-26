@@ -139,13 +139,13 @@ public class MinDka {
         inescapableState.forEach((state) -> {
             State.getAllStates().remove(state);
         });
-        for (State firststate : State.getAllStates()) { //mogla bi biti dvostruko brza petlja da je tablica(yikes)
+        for (State firststate : State.getAllStates()) {
             for (State secondstate : State.getAllStates()) {
                 if (firststate != secondstate) {
                     Map<State, List<State>> visited = new LinkedHashMap<>();
                     if (State.checkIfEquivalent(firststate, secondstate, allSymbols, visited)) {
                         firststate.addEquivalentStates(secondstate);
-                        //System.out.println(firststate.getName()+ " is eq with "+secondstate.getName());
+                       System.out.println(firststate.getName()+ " is eq with "+secondstate.getName());
                     }
 
                 }
@@ -165,7 +165,6 @@ public class MinDka {
             if (differentState) {
                 differentStates.add(state);
             }
-            ;
         }
         for (int i = 0; i < differentStates.size(); i++) {
             builder.append(differentStates.get(i).getName());
